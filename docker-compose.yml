@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: feshow-postgres
+    image: postgres
+    ports:
+      - '5433:5432'
+    restart: always
+    environment:
+      POSTGRES_USER: feshow-user
+      POSTGRES_PASSWORD: feshow-pass
+      POSTGRES_DB: feshow-db
+      PG_DATA: /data/postgres
+    volumes:
+      - ./data/pg:/data/postgres
