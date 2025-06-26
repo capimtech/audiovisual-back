@@ -16,12 +16,6 @@ import { TenantModule } from './tenant/tenant.module';
 import { UploadModule } from './upload/upload.module';
 import { UploadService } from './upload/upload.service';
 import { UsersModule } from './users/users.module';
-import { OwnersModule } from './owners/owners.module';
-import { FarmsModule } from './farms/farms.module';
-import { AnimalsModule } from './animals/animals.module';
-import { AnimalOwnersModule } from './animal-owners/animal-owners.module';
-import { AnimalServicesModule } from './animal-service/animal-services.module';
-import { SuppliesModule } from './supplies/supplies.module';
 
 @Module({
   imports: [
@@ -43,8 +37,6 @@ import { SuppliesModule } from './supplies/supplies.module';
         // logging: true,
       }),
     }),
-    FarmsModule,
-    OwnersModule,
     ScheduleModule.forRoot(),
     IamModule,
     UploadModule,
@@ -52,10 +44,6 @@ import { SuppliesModule } from './supplies/supplies.module';
     CompanyModule,
     TenantModule,
     AttachmentsModule,
-    AnimalsModule,
-    AnimalOwnersModule,
-    AnimalServicesModule,
-    SuppliesModule,
   ],
   controllers: [AppController, SendmailController],
   providers: [AppService, UploadService, SendmailService],
