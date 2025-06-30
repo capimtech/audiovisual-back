@@ -1,22 +1,15 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
-import { Auth } from './decorators/auth.decorator';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SignUpRequesterDto } from './dto/sign-up-requester.dto';
 import { SignInDto } from './dto/sign-in.dto';
-import { AuthType } from './enums/auth-type.enum';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { CheckForgotPasswordDto } from './dto/check-forgot-password.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { ApiKeyGuard } from '../../guards/api-key.guard';
+import { Auth } from './decorators/auth.decorator';
+import { AuthType } from './enums/auth-type.enum';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @ApiTags('authentication')
 @Auth(AuthType.NONE)
@@ -24,10 +17,14 @@ import { ApiKeyGuard } from '../../guards/api-key.guard';
 export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
 
-  @UseGuards(ApiKeyGuard)
-  @Post('sign-up')
-  signUp(@Body() createUserDto: CreateUserDto) {
-    return this.authService.signUp(createUserDto);
+  @Post('sign-up-requester')
+  signUpRequester(@Body() signUpDto: SignUpRequesterDto) {
+    return this.authService.signUpRequester(signUpDto);
+  }
+
+  @Post('sign-up-admin')
+  signUpAdmin(@Body() createUserDto: CreateUserDto) {
+    return this.authService.signUpAdmin(createUserDto);
   }
 
   @HttpCode(HttpStatus.OK)

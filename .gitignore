@@ -43,3 +43,5 @@ data/
 
 *.pem
 *base64.txt
+
+.nvmrc

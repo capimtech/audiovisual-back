@@ -1,4 +1,4 @@
-import { Role } from '../../users/enums/role.enum';
+import { Profile } from '../../users/enums/profile.enum';
 
 export interface ActiveUserData {
   /**
@@ -13,9 +13,9 @@ export interface ActiveUserData {
   email: string;
 
   /**
-   * The subject's (user) role.
+   * The subject's (user) profile.
    */
-  role: Role;
+  profile: Profile;
 
   /**
    * The subject's (user) image.

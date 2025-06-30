@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -13,7 +12,6 @@ import { addDays, isBefore } from 'date-fns';
 import { Repository } from 'typeorm';
 import { CompaniesService } from '../../companies/companies.service';
 import { SendmailService } from '../../sendmail/sendmail.service';
-import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { User } from '../../users/entities/user.entity';
 import { EMAIL_BOTTOM, EMAIL_HEADER } from '../../utils';
 import jwtConfig from '../config/jwt.config';
@@ -24,8 +22,9 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-// import { RefreshTokenIdsStorage } from './refresh-token-ids.storage';
-
+import { Profile } from '../../users/enums/profile.enum';
+import { SignUpRequesterDto } from './dto/sign-up-requester.dto';
+import { CreateUserDto } from '../../users/dto/create-user.dto';
 @Injectable()
 export class AuthenticationService {
   constructor(
@@ -33,62 +32,68 @@ export class AuthenticationService {
     private readonly hashingService: HashingService,
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
-    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>, // private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
+    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     private readonly sendmailService: SendmailService,
     private readonly companyService: CompaniesService,
   ) {}
 
-  async signUp(createUserDto: CreateUserDto) {
-    let user: User;
-    let tempPassword: string;
-
-    try {
-      const companyId = createUserDto.companyId;
-
-      const company = await this.companyService.findOne(companyId);
-      if (!company) throw new BadRequestException('Company not found');
-
-      user = new User();
-
-      user.name = createUserDto.name.trim();
-      user.email = createUserDto.email.toLowerCase().trim();
-      user.role = createUserDto.role;
-      if (createUserDto.password) {
-        const userPassword = createUserDto.password;
-        user.password = await this.hashingService.hash(userPassword);
-        user.temporaryPassword = false;
-        tempPassword = createUserDto.password;
-      } else {
-        const randomPassword = randomUUID();
-        tempPassword = randomPassword.replace('-', '').slice(0, 10);
-        user.password = await this.hashingService.hash(tempPassword);
-        user.temporaryPassword = true;
-      }
-      user.company = company;
-      user.companyId = companyId;
-
-      await this.usersRepository.save(user);
-    } catch (err) {
-      console.error('ERR', err);
-      const pgUniqueViolationErrorCode = '23505';
-      if (err.code === pgUniqueViolationErrorCode) {
-        throw new ConflictException();
-      }
-      throw err;
+  async signUpRequester(signUpRequesterDto: SignUpRequesterDto) {
+    if (signUpRequesterDto.email !== signUpRequesterDto.confirmEmail) {
+      throw new BadRequestException('Emails do not match');
     }
 
-    const mail = {
-      to: createUserDto.email,
-      subject: 'APL Ranch - Conta criada com sucesso!',
-      from: process.env.SENDMAIL_EMAIL,
-      text: `APL Ranch - Cadastro realizado com sucesso! Acesse sua conta com os seguintes dados. Email: ${user.email} - Senha: ${tempPassword}`,
-      html:
-        EMAIL_HEADER +
-        `
+    try {
+      const user = new User();
+      user.name = signUpRequesterDto.name.trim();
+      user.email = signUpRequesterDto.email.toLowerCase().trim();
+      user.cpf =
+        signUpRequesterDto.cpfCnpj.length === 11
+          ? signUpRequesterDto.cpfCnpj
+          : undefined;
+      user.cnpj =
+        signUpRequesterDto.cpfCnpj.length === 14
+          ? signUpRequesterDto.cpfCnpj
+          : undefined;
+      user.adress = signUpRequesterDto.adress;
+      user.district = signUpRequesterDto.district;
+      user.cep = signUpRequesterDto.cep
+        ? parseInt(signUpRequesterDto.cep.replace(/[^0-9]/g, ''))
+        : undefined;
+      user.city = signUpRequesterDto.city;
+      user.state = signUpRequesterDto.state;
+      user.phone = signUpRequesterDto.phone;
+      user.areaOfActivity = signUpRequesterDto.areaOfActivity;
+      user.profile = Profile.REQUISITANTE;
+
+      if (signUpRequesterDto.cpfCnpj.length === 14) {
+        const company = await this.companyService.create({
+          name: signUpRequesterDto.name,
+        });
+        user.company = company;
+        user.companyId = company.id;
+      } else {
+        user.companyId = process.env.DEFAULT_COMPANY_ID || null;
+      }
+
+      const tempPassword = randomUUID().replace('-', '').slice(0, 10);
+      user.password = await this.hashingService.hash(tempPassword);
+      user.temporaryPassword = true;
+
+      await this.usersRepository.save(user);
+
+      const mail = {
+        to: user.email,
+        subject: 'Audio Visual - Cadastro realizado com sucesso!',
+        from: process.env.SENDMAIL_EMAIL,
+        text: `Audio Visual - Cadastro realizado com sucesso! Acesse sua conta com os seguintes dados. Email: ${user.email} - Senha temporária: ${tempPassword}`,
+        html:
+          EMAIL_HEADER +
+          `
           <p>Olá <strong>${user.name}</strong>,</p>
-          <p>Agora você tem acesso ao sistema APL Ranch. Para acessar basta inserir os dados abaixo:</p>
+          <p>Seu cadastro no sistema Audio Visual foi realizado com sucesso. Use a senha temporária abaixo para acessar:</p>
           <p>E-mail: ${user.email}</p>
-          <p>Senha: ${tempPassword}</p>
+          <p>Senha temporária: ${tempPassword}</p>
+          <p>Por favor, altere sua senha após o primeiro login.</p>
           <p>Link de login: <a href="${process.env.BASE_URL}"></a></p>
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
             <tbody>
@@ -97,9 +102,7 @@ export class AuthenticationService {
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                       <tr>
-                        <td> <a href="${
-                          process.env.BASE_URL
-                        }" target="_blank">Acessar minha conta</a> </td>
+                        <td> <a href="${process.env.BASE_URL}" target="_blank">Acessar minha conta</a> </td>
                       </tr>
                     </tbody>
                   </table>
@@ -108,25 +111,79 @@ export class AuthenticationService {
             </tbody>
           </table>
         ` +
-        EMAIL_BOTTOM,
-    };
-    await this.sendmailService.send(mail);
+          EMAIL_BOTTOM,
+      };
+      await this.sendmailService.send(mail);
+    } catch (err) {
+      const pgUniqueViolationErrorCode = '23505';
+      if (err.code === pgUniqueViolationErrorCode) {
+        throw new BadRequestException('Email, CPF, or CNPJ already exists');
+      }
+      throw err;
+    }
+  }
+
+  async signUpAdmin(createUserDto: CreateUserDto) {
+    try {
+      const user = new User();
+      user.name = createUserDto.name.trim();
+      user.email = createUserDto.email.toLowerCase().trim();
+      user.cpf =
+        createUserDto.cpf.length === 11 ? createUserDto.cpf : undefined;
+      user.profile = Profile.ADMIN;
+
+      const tempPassword = randomUUID().replace('-', '').slice(0, 10);
+      user.password = await this.hashingService.hash(tempPassword);
+      user.temporaryPassword = true;
+
+      await this.usersRepository.save(user);
+
+      const mail = {
+        to: user.email,
+        subject: 'Audio Visual - Cadastro realizado com sucesso!',
+        from: process.env.SENDMAIL_EMAIL,
+        text: `Audio Visual - Cadastro realizado com sucesso! Acesse sua conta com os seguintes dados. Email: ${user.email} - Senha temporária: ${tempPassword}`,
+        html:
+          EMAIL_HEADER +
+          `
+          <p>Olá <strong>${user.name}</strong>,</p>
+          <p>Seu cadastro no sistema Audio Visual foi realizado com sucesso. Use a senha temporária abaixo para acessar:</p>
+          <p>E-mail: ${user.email}</p>
+          <p>Senha temporária: ${tempPassword}</p>
+          <p>Por favor, altere sua senha após o primeiro login.</p>
+          <p>Link de login: <a href="${process.env.BASE_URL}"></a></p>
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+            <tbody>
+              <tr>
+                <td align="left">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                      <tr>
+                        <td> <a href="${process.env.BASE_URL}" target="_blank">Acessar minha conta</a> </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        ` +
+          EMAIL_BOTTOM,
+      };
+      await this.sendmailService.send(mail);
+    } catch (err) {
+      const pgUniqueViolationErrorCode = '23505';
+      if (err.code === pgUniqueViolationErrorCode) {
+        throw new BadRequestException('Email, CPF already exists');
+      }
+      throw err;
+    }
   }
 
   async signIn(signInDto: SignInDto) {
     const user = await this.usersRepository.findOne({
-      where: {
-        email: signInDto.email,
-      },
-      select: [
-        'id',
-        'email',
-        'role',
-        'password',
-        'image',
-        'temporaryPassword',
-        'companyId',
-      ],
+      where: { email: signInDto.email.toLowerCase().trim() },
+      select: ['id', 'email', 'profile', 'password', 'temporaryPassword'],
     });
     if (!user) {
       throw new UnauthorizedException('User does not exists');
@@ -135,9 +192,8 @@ export class AuthenticationService {
       signInDto.password,
       user.password,
     );
-
     if (!isEqual) {
-      throw new UnauthorizedException('User does not exists');
+      throw new UnauthorizedException('Invalid password');
     }
     const userData = await this.generateTokens(user);
     return userData;
@@ -151,7 +207,7 @@ export class AuthenticationService {
         this.jwtConfiguration.accessTokenTtl,
         {
           email: user.email,
-          role: user.role,
+          profile: user.profile,
           image: user.image,
           temporaryPassword: user.temporaryPassword,
           companyId: user.companyId,
@@ -227,9 +283,9 @@ export class AuthenticationService {
 
     const mail = {
       to: forgotPassword.email,
-      subject: 'APL Ranch - Recuperação de senha!',
+      subject: 'Audio Visual - Recuperação de senha!',
       from: process.env.SENDMAIL_EMAIL,
-      text: `APL Ranch - Para recuperar a sua senha utilize o seguinte código. Código: ${code}`,
+      text: `Audio Visual - Para recuperar a sua senha utilize o seguinte código. Código: ${code}`,
       html:
         EMAIL_HEADER +
         `
@@ -307,9 +363,9 @@ export class AuthenticationService {
 
     const mail = {
       to: updatePassword.email,
-      subject: 'APL Ranch - Senha alterada com sucesso',
+      subject: 'Audio Visual - Senha alterada com sucesso',
       from: process.env.SENDMAIL_EMAIL,
-      text: `APL Ranch - Senha alterada com sucesso.`,
+      text: `Audio Visual - Senha alterada com sucesso.`,
       html:
         EMAIL_HEADER +
         `

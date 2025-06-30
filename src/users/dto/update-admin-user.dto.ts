@@ -1,12 +1,12 @@
 import { IsEnum, IsString } from 'class-validator';
-import { Role } from '../enums/role.enum';
+import { Profile } from '../enums/profile.enum';
 
 export class UpdateAdminUserDto {
   @IsString()
   name: string;
 
-  @IsEnum(Role)
-  role: Role;
+  @IsEnum(Profile)
+  profile: Profile;
 
   @IsString()
   status: string;

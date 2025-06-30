@@ -29,8 +29,8 @@ async function bootstrap() {
   app.use(helmet());
 
   const options = new DocumentBuilder()
-    .setTitle('APL Ranch')
-    .setDescription('API APL Ranch - Gestão de fazendas')
+    .setTitle('Audio Visual - Niterói')
+    .setDescription('Audio Visual - Niterói')
     .setVersion('1.0')
     .build();
 

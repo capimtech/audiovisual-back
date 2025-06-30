@@ -1,0 +1,8 @@
+export enum AreaOfActivity {
+  PRODUTOR = 'PRODUTOR',
+  REALIZADOR = 'REALIZADOR',
+  EDUCADOR = 'EDUCADOR',
+  EMPRESA = 'EMPRESA',
+  TECNICO = 'TECNICO',
+  OUTRO = 'OUTRO',
+}

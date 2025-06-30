@@ -8,7 +8,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { Role } from '../../users/enums/role.enum';
+import { Profile } from '../../users/enums/profile.enum';
 
 export class PaginationQueryDto {
   @IsString()
@@ -25,9 +25,9 @@ export class PaginationQueryDto {
   @Min(0)
   offset?: number;
 
-  @IsEnum(Role)
+  @IsEnum(Profile)
   @IsOptional()
-  role?: Role;
+  profile?: Profile;
 
   @IsBoolean()
   @IsOptional()
