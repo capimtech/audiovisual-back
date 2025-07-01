@@ -380,7 +380,7 @@ export class AuthenticationService {
                       <tr>
                         <td> <a href="https://${
                           process.env.NODE_ENV !== 'production' ? 'test' : 'app'
-                        }.apl-ranch.app.br" target="_blank">Acessar plataforma</a> </td>
+                        }.audio-visual.app.br" target="_blank">Acessar plataforma</a> </td>
                       </tr>
                     </tbody>
                   </table>
