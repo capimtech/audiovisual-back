@@ -14,9 +14,9 @@ export default registerAs('database', () => {
     cli: {
       migrationsDir: __dirname + '/../migrations',
     },
-    // ssl: {
-    //   rejectUnauthorized: false,
-    // },
+    ssl: {
+      rejectUnauthorized: false,
+    },
     extra: {
       connectionTimeoutMillis: 30000,
       idleTimeoutMillis: 30000,

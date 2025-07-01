@@ -336,11 +336,11 @@ export const EMAIL_HEADER = `<!doctype html>
     <br /><br />
     <center>
       <a href= "${process.env.BASE_URL}" target="_blank">
-        <img width="200" src="${process.env.BASE_URL}/apl-ranch-logo-img.png" />
+        <img width="200" src="${process.env.BASE_URL}/audio-visual-logo-img.png" />
       </a>
     </center>
     <br /><br />
-    <span class="preheader">E-mail enviado pelo APL.</span>
+    <span class="preheader">E-mail enviado pelo Audio Visual.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
       <tr>
         <td>&nbsp;</td>
@@ -379,7 +379,7 @@ export const EMAIL_BOTTOM =
   // </tr>
   `<tr>
 <td class="content-block powered-by">
-© <a href="${process.env.BASE_URL}">APL</a> 2025 ${
+© <a href="${process.env.BASE_URL}">Audio Visual</a> 2025 ${
     new Date().getFullYear() > 2025 ? ` - ${new Date().getFullYear()}` : ``
   } - Todos os direitos reservados. 
 </td>

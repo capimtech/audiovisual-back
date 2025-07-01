@@ -8,8 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Farm } from '../../farms/entities/farm.entity';
-import { Animal } from '../../animals/entities/animal.entity';
 
 @Entity('companies')
 export class Company {
@@ -30,10 +28,4 @@ export class Company {
 
   @OneToMany(() => User, (entity) => entity.company)
   users: User[];
-
-  @OneToMany(() => Farm, (entity) => entity.company)
-  farms: Farm[];
-
-  @OneToMany(() => Farm, (entity) => entity.company)
-  animals: Animal[];
 }

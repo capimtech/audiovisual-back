@@ -21,9 +21,9 @@ const connectionSource = new DataSource({
   cli: {
     migrationsDir: path.join(__dirname, '/src/migrations'),
   },
-  // ssl: {
-  //   rejectUnauthorized: false,
-  // },
+  ssl: {
+    rejectUnauthorized: false,
+  },
   extra: {
     connectionTimeoutMillis: 30000,
     idleTimeoutMillis: 30000,

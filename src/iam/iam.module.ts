@@ -16,7 +16,7 @@ import { Company } from '../companies/entities/company.entity';
 import { SendmailService } from '../sendmail/sendmail.service';
 import { GoogleAuthenticationController } from './authentication/social/google-authentication.controller';
 import { GoogleAuthenticationService } from './authentication/social/google-authentication.service';
-import { RolesGuard } from './authorization/guards/roles.guard';
+import { ProfilesGuard } from './authorization/guards/profiles.guard';
 import { CompanyModule } from 'src/companies/companies.module';
 
 @Module({
@@ -37,7 +37,7 @@ import { CompanyModule } from 'src/companies/companies.module';
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: ProfilesGuard,
     },
     AccessTokenGuard,
     // RefreshTokenIdsStorage,

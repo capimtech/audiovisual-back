@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Company } from '../companies/entities/company.entity';
 import { AccessTokenGuard } from '../iam/authentication/guards/access-token.guard';
 import { AuthenticationGuard } from '../iam/authentication/guards/authentication.guard';
-import { RolesGuard } from '../iam/authorization/guards/roles.guard';
+import { ProfilesGuard } from '../iam/authorization/guards/profiles.guard';
 import jwtConfig from '../iam/config/jwt.config';
 import { BcryptService } from '../iam/hashing/bcrypt.service';
 import { HashingService } from '../iam/hashing/hashing.service';
@@ -38,7 +38,7 @@ import { CompanyModule } from 'src/companies/companies.module';
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: ProfilesGuard,
     },
     AccessTokenGuard,
     SendmailService,
