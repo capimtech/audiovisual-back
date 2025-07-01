@@ -1,0 +1,4 @@
+export enum PERSONTYPE {
+  FISICA = 'FISICA',
+  JURIDICA = 'JURIDICA',
+}
