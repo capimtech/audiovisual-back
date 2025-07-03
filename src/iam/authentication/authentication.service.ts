@@ -65,15 +65,11 @@ export class AuthenticationService {
       user.areaOfActivity = signUpRequesterDto.areaOfActivity;
       user.profile = Profile.REQUISITANTE;
 
-      if (signUpRequesterDto.cpfCnpj.length === 14) {
-        const company = await this.companyService.create({
-          name: signUpRequesterDto.name,
-        });
-        user.company = company;
-        user.companyId = company.id;
-      } else {
-        user.companyId = process.env.DEFAULT_COMPANY_ID || null;
-      }
+      const companyId = signUpRequesterDto.companyId;
+      const company = await this.companyService.findOne(companyId);
+      if (!company) throw new BadRequestException('Company not found');
+      user.company = company;
+      user.companyId = companyId;
 
       const tempPassword = randomUUID().replace('-', '').slice(0, 10);
       user.password = await this.hashingService.hash(tempPassword);
@@ -136,6 +132,12 @@ export class AuthenticationService {
       user.password = await this.hashingService.hash(tempPassword);
       user.temporaryPassword = true;
 
+      const companyId = createUserDto.companyId;
+      const company = await this.companyService.findOne(companyId);
+      if (!company) throw new BadRequestException('Company not found');
+      user.company = company;
+      user.companyId = companyId;
+
       await this.usersRepository.save(user);
 
       const mail = {
@@ -183,7 +185,14 @@ export class AuthenticationService {
   async signIn(signInDto: SignInDto) {
     const user = await this.usersRepository.findOne({
       where: { email: signInDto.email.toLowerCase().trim() },
-      select: ['id', 'email', 'profile', 'password', 'temporaryPassword'],
+      select: [
+        'id',
+        'email',
+        'profile',
+        'password',
+        'temporaryPassword',
+        'companyId',
+      ],
     });
     if (!user) {
       throw new UnauthorizedException('User does not exists');
