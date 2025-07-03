@@ -16,6 +16,7 @@ import { TenantModule } from './tenant/tenant.module';
 import { UploadModule } from './upload/upload.module';
 import { UploadService } from './upload/upload.service';
 import { UsersModule } from './users/users.module';
+import { FilmRequestsModule } from './film-requests/film-requests.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersModule } from './users/users.module';
     CompanyModule,
     TenantModule,
     AttachmentsModule,
+    FilmRequestsModule,
   ],
   controllers: [AppController, SendmailController],
   providers: [AppService, UploadService, SendmailService],

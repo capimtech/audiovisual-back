@@ -1,0 +1,6 @@
+export enum ProductionType {
+  FICCAO = 'FICÇÃO',
+  DOCUMENTARIO = 'DOCUMENTÁRIO',
+  PUBLICIDADE = 'PUBLICIDADE',
+  OUTROS = 'OUTROS',
+}
